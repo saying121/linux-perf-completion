@@ -1,7 +1,7 @@
 #compdef perf
 
 local curcontext="$curcontext" curstate state line expl nm="$compstate[nmatches]"
-local -a args opts cmd fields sortkeys
+local -a args opts cmd fields sortkeys perf_cmd
 local -A exclude full short
 local -i i skip
 
@@ -291,6 +291,8 @@ short=(
 )
 
 cmd=( $words[1] )
+perf_cmd=( $words[1] )
+
 (( $#words > 2 )) && ign='!'
 
 _arguments -C -A "-*" \
@@ -784,7 +786,7 @@ while (( $#state )); do
     ;&
     events)
       local -a event_list
-      event_list=($(_call_program events perf list --raw-dump hw sw cache tracepoint pmu sdt 2>/dev/null))
+      event_list=($(_call_program events $perf_cmd list --raw-dump hw sw cache tracepoint pmu sdt 2>/dev/null))
       if [[ -d /sys/bus/event_source/devices/cpu/events ]]; then
         event_list+=($(ls /sys/bus/event_source/devices/cpu/events 2>/dev/null))
       fi
@@ -792,12 +794,12 @@ while (( $#state )); do
     ;;
     metrics)
       local -a metric_list
-      metric_list=($(_call_program metrics perf list --raw-dump metric metricgroup 2>/dev/null))
+      metric_list=($(_call_program metrics $perf_cmd list --raw-dump metric metricgroup 2>/dev/null))
       _sequence _wanted metrics expl metric compadd - -a metric_list
     ;;
     pfm-events)
       local -a pfm_list
-      pfm_list=($(_call_program pfm-events perf list --raw-dump pfm 2>/dev/null))
+      pfm_list=($(_call_program pfm-events $perf_cmd list --raw-dump pfm 2>/dev/null))
       _sequence _wanted pfm-events expl 'pfm event' compadd - -a pfm_list
     ;;
     itrace-opts)
