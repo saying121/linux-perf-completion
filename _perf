@@ -73,7 +73,7 @@ full=(
   --dump-symtab '[dump the symbol table used for profiling]'
   --duration '=[show only events with duration over threshold]:minimum duration (ms)'
   --entries '=[specify how many functions to display]:number of functions'
-  --event '=[select the PMU event]:event:->events'
+  --event '[select the PMU event]:event:->events'
   --exclude-other '[only display entries with parent-match]'
   --exclude-perf "[don't record events from perf itself]"
   --exec '=[specify path to executable or shared library]:file:_files'
