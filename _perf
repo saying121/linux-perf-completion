@@ -751,6 +751,16 @@ while (( $#state )); do
         opts=( $(_call_program options "$cmd --list-opts|grep -v -e '^#' -e Unknown") )
       fi
 
+      case ${(j.-.)cmd[2,-1]} in
+        stat|trace)
+          subcmds=()
+          args=('*::command:->command')
+        ;;
+        *record)
+          args+=('*::command:->command')
+        ;;
+      esac
+
       for (( i = $#opts; i; i-- )); do
         opts[i]=(
           ${exclude[$opts[i]]}${opts[i]}${full[$opts[i]]}
@@ -820,6 +830,9 @@ while (( $#state )); do
     ;;
     sort-keys)
       _sequence _wanted sort-keys expl 'sort key' compadd - -a sortkeys
+    ;;
+    command)
+      _command_names -e
     ;;
   esac
 done
