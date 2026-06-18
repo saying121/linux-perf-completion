@@ -126,7 +126,7 @@ full=(
   --max-events '=[set maximum number of events to print]:events'
   --max-size '=[limit the maximum size of the output file]: :_numbers size B K M G'
   --max-stack '=[set maximum stack depth when parsing the callchain]:depth [kernel.perf_event_max_stack or 127]'
-  --metrics '=[monitor specified metrics or metric groups]:metric'
+  --metrics '=[monitor specified metrics or metric groups]:metric:->metrics'
   --min-stack '=[set minimum stack depth when parsing the callchain]:depth'
   --mmap-flush '=[specify minimum size that is extracted from mmap data pages]: :_numbers -d 1 -u bytes size B K M G'
   --mmap-pages '=[specify number of mmap data pages]:number of pages'
@@ -149,6 +149,7 @@ full=(
   --output '=[specify output file]:file:_files'
   --parent '=[filter by parent caller]:parent (regex)'
   --percent-limit "=[don't show entries under specified percentage]:percent"
+  --pfm-events '=[specify pfm events]:pfm event:->pfm-events'
   --percent-type '=[set annotation percent type]:compadd {local,global}{period,hits}'
   --percentage '=[set display of filtered entries percentages]:display:(relative absolute)'
   --phys-data '[record/report sample physical addresses]'
@@ -584,7 +585,7 @@ while (( $#state )); do
             --transaction '[sample transaction flags (special events only)]'
           )
         ;;
-        (c2c-|kvm-|)report)
+        (c2c-|kvm-|kwork-|)report)
           short+=(
             --branch-stack -b
             --comms -c
@@ -616,7 +617,7 @@ while (( $#state )); do
 	    phys_daddr data_page_size blocked
           )
         ;;
-        sched-latency)
+        (sched-|kwork-)latency)
           short+=(
             --CPU -C
             --pids -p
@@ -626,7 +627,7 @@ while (( $#state )); do
             --CPU '=[specify CPU to profile on]:cpu'
           )
         ;;
-        sched-timehist)
+        (sched-|kwork-)timehist)
           short+=(
             --idle-hist -I
             --migrations -M
@@ -706,7 +707,7 @@ while (( $#state )); do
             --width '=[specify page width]:page width'
           )
         ;;
-        (kvm-|)top)
+        (kvm-|kwork-|)top)
           full+=(
             --delay '=[specify delay between refreshes]:delay (seconds)'
             --comms '=[only consider symbols in specified comms]:comm'
@@ -741,6 +742,9 @@ while (( $#state )); do
           )
           unset 'short[--no-inherit]'
         ;;
+        kwork)
+          args=( '1:commands:(record report latency timehist top)' '*:: :->args' )
+        ;;
       esac
       if (( !skip )); then
         subcmds=( $(_call_program commands "$cmd --list-cmds|grep -v -e '^#' -e Unknown") )
@@ -766,11 +770,25 @@ while (( $#state )); do
         "${ign}(- *)-h[display brief usage summary]"
     ;;
     event-types)
-      _wanted event-types expl 'event type' compadd - hw sw cache pmu tracepoint event_glob
+      _wanted event-types expl 'event type' compadd - hw sw cache pmu tracepoint event_glob sdt
     ;&
     events)
-      _wanted events expl event compadd - \
-        ${${=${${(f)"$(_call_program events perf list hw sw cache pmu tracepoint event_glob)"}[2,-5]#  }%% [ \[]*}:#OR}
+      local -a event_list
+      event_list=($(_call_program events perf list --raw-dump hw sw cache tracepoint pmu sdt 2>/dev/null))
+      if [[ -d /sys/bus/event_source/devices/cpu/events ]]; then
+        event_list+=($(ls /sys/bus/event_source/devices/cpu/events 2>/dev/null))
+      fi
+      _sequence _wanted events expl event compadd - -a event_list
+    ;;
+    metrics)
+      local -a metric_list
+      metric_list=($(_call_program metrics perf list --raw-dump metric metricgroup 2>/dev/null))
+      _sequence _wanted metrics expl metric compadd - -a metric_list
+    ;;
+    pfm-events)
+      local -a pfm_list
+      pfm_list=($(_call_program pfm-events perf list --raw-dump pfm 2>/dev/null))
+      _sequence _wanted pfm-events expl 'pfm event' compadd - -a pfm_list
     ;;
     itrace-opts)
       _values -s '' "itrace option [ibxwpe]" \
