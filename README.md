@@ -20,7 +20,7 @@ Ref: [`perf.bash`](perf.bash) (bash reference)
 ### zinit (zi)
 
 ```zsh
-zi ice lucid wait as'completion'
+zi ice lucid wait as'completion' blockf has'perf'
 zi light saying121/linux-perf-completion
 ```
 
