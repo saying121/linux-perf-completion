@@ -770,7 +770,7 @@ while (( $#state )); do
         "${ign}(- *)-h[display brief usage summary]"
     ;;
     event-types)
-      _wanted event-types expl 'event type' compadd - hw sw cache pmu tracepoint event_glob sdt
+      _wanted event-types expl 'event type' compadd - hw sw cache tracepoint pmu sdt metric metricgroup event_glob pfm
     ;&
     events)
       local -a event_list
