@@ -1,6 +1,6 @@
 # \_perf — perf zsh completion
 
-Ref: [`perf.bash`](perf.bash) (bash reference)
+Ref: [`perf.bash`](perf.bash) (bash reference, based zsh _perf)
 
 ## Changes from bash version
 
